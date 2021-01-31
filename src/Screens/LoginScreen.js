@@ -1,40 +1,81 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet, Dimensions, ImageBackground, TextInput } from 'react-native';
+import { View, Image, Text, StyleSheet, Dimensions, ImageBackground, TextInput, ScrollView, ToastAndroid } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 const { width, height } = Dimensions.get('window');
 const Bacground = require('../Assets/Images/background.png');
 const Logo = require('../Assets/Images/logo.png');
-const Login = ({ navigation }) => {
-    return (
-        <View style={styles.Container}>
-            <ImageBackground source={Bacground} style={styles.ImageBackground}>
-                <View style={styles.ImageContainer}>
-                    <Image source={Logo} style={styles.ImageStyle} />
-                </View>
-            </ImageBackground>
-            <View style={styles.ChildContainer}>
-                <Text style={styles.TextPrimary}>Welcome Back</Text>
-                <Text style={[styles.textScondary, { fontSize: 12, color: '#858585' }]}>Login to your Account</Text>
-                <View style={styles.TextInputView}>
-                    <TextInput placeholder={"Mobile Number"}
-                        keyboardType={'phone-pad'}
-                        maxLength={10}
-                        style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} />
-                </View>
-                <TouchableOpacity style={{}} onPress={() => navigation.navigate('Home')}>
-                    <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} colors={['#02D384', '#00B7C9']} style={styles.linearGradient}>
-                        <Text style={styles.buttonText}>
-                            Login
-        </Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-};
+import axios from 'axios';
+export default class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            email: '',
+            password: '',
+        };
+    }
+    insertData() {
+        fetch('https://reqres.in/api/login', {
+            method: 'POST',
+            headers: new Headers({
+                "Content-Type": "application/json"
+            }),
+            body: JSON.stringify({
+                "email": this.state.email,
+                "password": this.state.password
+            })
+        }).then(response => response.json())
+            .then(result => {
+                console.log(result)
+                if (result.token) {
+                    ToastAndroid.show("Success", ToastAndroid.SHORT);
+                    this.props.navigation.navigate("Home");
+                }
+                else {
+                    ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+                }
 
-export default Login;
+            }
+            )
+            .catch(error => console.log('error', error));
+    }
+    render() {
+        return (
+            <View style={styles.Container}>
+                <ScrollView showsHorizontalScrollIndicator={false}>
+                    <ImageBackground source={Bacground} style={styles.ImageBackground}>
+                        <View style={styles.ImageContainer}>
+                            <Image source={Logo} style={styles.ImageStyle} />
+                        </View>
+                    </ImageBackground>
+                    <View style={styles.ChildContainer}>
+                        <Text style={styles.TextPrimary}>Welcome Back</Text>
+                        <Text style={[styles.textScondary, { fontSize: 12, color: '#858585' }]}>Login to your Account</Text>
+                        <View style={styles.TextInputView}>
+                            <TextInput placeholder={"Email"}
+                                keyboardType={'email-address'}
+                                onChangeText={email => this.setState({ email })}
+                                style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} />
+                        </View>
+                        <View style={styles.TextInputView}>
+                            <TextInput placeholder={"password"}
+                                maxLength={10}
+                                onChangeText={password => this.setState({ password })}
+                                style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} />
+                        </View>
+                        <TouchableOpacity style={{}} onPress={() => this.insertData()}>
+                            <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} colors={['#02D384', '#00B7C9']} style={styles.linearGradient}>
+                                <Text style={styles.buttonText}>
+                                    Login
+            </Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </View>
+        );
+    }
+}
 const styles = StyleSheet.create({
     Container: {
         flex: 1,
@@ -47,7 +88,7 @@ const styles = StyleSheet.create({
     },
     ImageContainer: {
         position: 'absolute',
-        bottom: -height * .07
+        bottom: -height * .05
     },
     ImageStyle: {
         width: 84,
@@ -55,10 +96,9 @@ const styles = StyleSheet.create({
     },
     ChildContainer: {
         alignItems: 'center',
-        marginTop: height * .1
+        marginTop: height * .07
     },
     TextContainer: {
-        marginTop: height * .03,
         alignItems: 'center'
     },
     TextPrimary: {
@@ -76,7 +116,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#D4D4D4',
         borderRadius: 6,
-        marginTop: height * .05
+        marginTop: height * .03
     },
     linearGradient: {
         width: 279,

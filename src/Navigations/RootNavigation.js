@@ -11,6 +11,7 @@ import {
 import Login from '../Screens/LoginScreen';
 import Home from '../Screens/HomeScreen';
 import Success from '../Screens/SuccessScreen';
+import Map from '../Screens/MapView';
 const Stack = createStackNavigator();
 const WrapperNavigations = (props) => {
     return (
@@ -35,6 +36,11 @@ const WrapperNavigations = (props) => {
                 <Stack.Screen
                     name="Success"
                     component={Success}
+                    options={{ headerShown: false, animationEnabled: false }}
+                />
+                <Stack.Screen
+                    name="Map"
+                    component={Map}
                     options={{ headerShown: false, animationEnabled: false }}
                 />
             </Stack.Navigator>
