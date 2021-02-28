@@ -3,9 +3,8 @@ import { View, Image, Text, StyleSheet, Dimensions, ImageBackground, TextInput, 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 const { width, height } = Dimensions.get('window');
-const Bacground = require('../Assets/Images/background.png');
-const Logo = require('../Assets/Images/logo.png');
-import axios from 'axios';
+const Bacground = require('../Assets/Images/header.png');
+import AsyncStorage from '@react-native-community/async-storage';
 export default class App extends React.Component {
     constructor(props) {
         super(props);
@@ -15,38 +14,21 @@ export default class App extends React.Component {
         };
     }
     insertData() {
-        fetch('https://reqres.in/api/login', {
-            method: 'POST',
-            headers: new Headers({
-                "Content-Type": "application/json"
-            }),
-            body: JSON.stringify({
-                "email": this.state.email,
-                "password": this.state.password
-            })
-        }).then(response => response.json())
-            .then(result => {
-                console.log(result)
-                if (result.token) {
-                    ToastAndroid.show("Success", ToastAndroid.SHORT);
-                    this.props.navigation.navigate("Home");
-                }
-                else {
-                    ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
-                }
-
-            }
-            )
-            .catch(error => console.log('error', error));
+        if (this.state.email == 'test@gmail.com' && this.state.password == 123456) {
+            ToastAndroid.show("Success", ToastAndroid.SHORT);
+            this.props.navigation.navigate("Dashboard");
+            AsyncStorage.setItem('email', 'test@gamil.com')
+            AsyncStorage.setItem('password', '123456')
+        }
+        else {
+            ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+        }
     }
     render() {
         return (
             <View style={styles.Container}>
                 <ScrollView showsHorizontalScrollIndicator={false}>
                     <ImageBackground source={Bacground} style={styles.ImageBackground}>
-                        <View style={styles.ImageContainer}>
-                            <Image source={Logo} style={styles.ImageStyle} />
-                        </View>
                     </ImageBackground>
                     <View style={styles.ChildContainer}>
                         <Text style={styles.TextPrimary}>Welcome Back</Text>
@@ -64,7 +46,7 @@ export default class App extends React.Component {
                                 style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} />
                         </View>
                         <TouchableOpacity style={{}} onPress={() => this.insertData()}>
-                            <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} colors={['#02D384', '#00B7C9']} style={styles.linearGradient}>
+                            <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} colors={['#5D55B4', '#9E9ACC']} style={styles.linearGradient}>
                                 <Text style={styles.buttonText}>
                                     Login
             </Text>
@@ -82,7 +64,7 @@ const styles = StyleSheet.create({
     },
     ImageBackground: {
         width: '100%',
-        height: 301,
+        height: 250,
         alignItems: 'center',
         justifyContent: 'center'
     },
