@@ -10,15 +10,66 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from 'react-native-image-picker';
 import { connect } from 'react-redux';
 import { addItem } from '../Store/action';
+import Geocoder from 'react-native-geocoder';
 class AddImage extends Component {
     constructor(props) {
         super(props);
         this.state = {
             avatarSource: null,
             name: '',
-            location: '',
+            location: '', region: {
+                latitude: 24.92009056750823,
+                longitude: 67.1012272143364,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.1
+            },
+            locationChoosen: false, currentAddress: '', location: false
         };
         this.selectPhotoTapped = this.selectPhotoTapped.bind(this);
+    }
+    toggle() {
+        this.setState({ location: !this.state.location })
+    }
+    findCoordinates = () => {
+        navigator.geolocation = require('@react-native-community/geolocation');
+        navigator.geolocation.getCurrentPosition(pos => {
+            // alert("Select location and go back to see the changed location")
+            // this.map.animateToRegion({
+            //     ...this.state.region,
+            //     latitude: pos.coords.latitude,
+            //     longitude: pos.coords.longitude
+            // })
+            this.setState({
+                region: {
+                    ...this.state.region,
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude
+                },
+                locationChoosen: true,
+                location: true
+            })
+            this.getAddress(pos.coords.latitude, pos.coords.longitude)
+        },
+            err => {
+                console.log(err);
+                alert("something went wrong")
+            })
+    };
+    getAddress = async (lat, lng) => {
+        const MY_KEY = 'AIzaSyCB43lge3C9uOUNpxXNBNMpq4POi1CFrME';
+        await Geocoder.fallbackToGoogle(MY_KEY);
+        try {
+            let res = await Geocoder.geocodePosition({ lat, lng })
+            let addr = (res[0].formattedAddress)
+            this.setState({
+                currentAddress: addr
+            })
+            console.log(this.state.currentAddress)
+            // AsyncStorage.setItem('location', this.state.currentAddress);
+        } catch (error) {
+            alert(error)
+        }
+
     }
     selectPhotoTapped() {
         const options = {
@@ -29,6 +80,8 @@ class AddImage extends Component {
                 skipBackup: true,
             },
         };
+
+
 
         ImagePicker.showImagePicker(options, response => {
             console.log('Response = ', response);
@@ -74,7 +127,7 @@ class AddImage extends Component {
         }
     }
     Additem = () => {
-        this.props.addItem({ name: this.state.name, location: this.state.location, image: this.state.avatarSource });
+        this.props.addItem({ name: this.state.name, location: this.state.currentAddress, image: this.state.avatarSource });
         this.props.navigation.goBack();
     }
     render() {
@@ -103,13 +156,25 @@ class AddImage extends Component {
                         <View style={styles.TextInputView}>
                             <TextInput placeholder={"Name"}
                                 onChangeText={name => this.setState({ name })}
-                                style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} />
+                                style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center', color: '#808080' }]} />
                         </View>
-                        <View style={styles.TextInputView}>
-                            <TextInput placeholder={"Current location"}
+                        <TouchableOpacity onPress={() => this.toggle()}>
+                            <View style={styles.TextInputView}>
+                                {/* <TextInput placeholder={"Current location"}
                                 onChangeText={location => this.setState({ location })}
-                                style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} />
-                        </View>
+                                style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} /> */}
+                                {
+                                    this.state.location == true ? <Text style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center', color: '#808080', lineHeight: 15 }]}>{this.state.currentAddress}</Text> : <TextInput placeholder={"Current location"}
+                                        onChangeText={currentAddress => this.setState({ currentAddress })}
+                                        style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center' }]} />
+                                }
+
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => this.findCoordinates()} style={{ marginTop: 5, flexDirection: 'row' }}>
+                            <IonIcon name="location" size={20} />
+                            <Text style={[styles.textScondary, { fontSize: 13, padding: 10, alignItems: 'center', color: '#808080', lineHeight: 15, marginLeft: 5 }]}>Choose current location</Text>
+                        </TouchableOpacity>
                         <TouchableOpacity style={{}} onPress={() => this.Additem()}>
                             <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} colors={['#5D55B4', '#9E9ACC']} style={styles.linearGradient}>
                                 <Text style={styles.buttonText}>
@@ -172,7 +237,7 @@ const styles = StyleSheet.create({
     },
     TextInputView: {
         width: 279,
-        height: 45,
+        height: 50,
         borderWidth: 1,
         borderColor: '#D4D4D4',
         borderRadius: 6,
